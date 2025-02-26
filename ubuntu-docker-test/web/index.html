@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Docker Compose Demo</title>
+</head>
+<body>
+    <h1>Hello from Nginx container!</h1>
+    <div id="api-data">Loading data from API...</div>
+    
+    <script>
+        fetch('/api/data')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('api-data').innerText = data.message;
+            })
+            .catch(error => {
+                document.getElementById('api-data').innerText = "Error fetching API data";
+                console.error(error);
+            });
+    </script>
+</body>
+</html>

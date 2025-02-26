@@ -1,0 +1,79 @@
+version: '3'
+
+services:
+  ubuntu:
+    build: .
+    container_name: my-ubuntu
+    volumes:
+      - ./shared:/app/shared
+    environment:
+      - ENV_MODE=development
+      - DEBUG=true
+    networks:
+      - app-network
+    tty: true
+    stdin_open: true
+  
+  nginx:
+    image: nginx:latest
+    container_name: my-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./web:/usr/share/nginx/html
+      - ./nginx/conf:/etc/nginx/conf.d
+    depends_on:
+      - api
+    networks:
+      - app-network
+  
+  api:
+    build: 
+      context: ./api
+      dockerfile: Dockerfile.api
+    container_name: my-api
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./api:/app
+    environment:
+      - DATABASE_URL=postgres://user:password@postgres:5432/mydatabase
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+  
+  postgres:
+    image: postgres:14
+    container_name: my-postgres
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mydatabase
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+        
+    healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U user -d mydatabase"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+    restart: always
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres-data:

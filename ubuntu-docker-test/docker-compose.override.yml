@@ -1,0 +1,10 @@
+services:
+  api:
+    volumes:
+      - ./api:/app
+    environment:
+      - DEBUG=true
+  
+  nginx:
+    ports:
+      - "8080:80"

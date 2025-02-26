@@ -1,0 +1,10 @@
+services:
+  api:
+    volumes: []  # No source code mounting in production
+    environment:
+      - DEBUG=false
+  
+  nginx:
+    ports:
+      - "80:80"
+    restart: always
